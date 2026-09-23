@@ -35,7 +35,14 @@ months = sorted(m for m in mret.index if LO <= m <= HI)
 rows_r, rows_z, rows_i = [], [], []
 for k, m in enumerate(months):
     if m not in mdv.index: continue
-    liq = mdv.loc[m].dropna().nlargest(NTOP)
+    # LOOK-AHEAD FIX: the liquidity screen must use volume known before month m
+    # begins.  Screening on volume *through* m selects names because they spiked
+    # during m -- conditioning universe membership on the outcome.  Measured cost
+    # of the bug: equal-weight universe +27.5%/yr (Sharpe 1.26) vs +8.3% (0.40).
+    if k == 0: continue                      # months[-1] would wrap to the last month
+    msel = months[k-1]
+    if msel not in mdv.index: continue
+    liq = mdv.loc[msel].dropna().nlargest(NTOP)
     syms = [s for s in liq.index if s.upper() in s2p]
     if len(syms) < 300: continue
     pn = np.array([s2p[s.upper()] for s in syms])
