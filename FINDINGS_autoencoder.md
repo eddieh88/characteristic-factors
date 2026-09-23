@@ -189,9 +189,45 @@ simple ones by enough to pay for itself.
 - Compustat restatement bias is untestable without point-in-time Compustat. The
   6-month lag test catches *filing delay*, not restatement.
 
+## Secondary statistic: residual AR(1) — Steps 1–7 do not reopen
+
+Pre-registered condition: *if characteristic-driven betas produce residuals that
+mean-revert where PCA-5's do not, that would reopen Steps 1–7.* Corrected panel,
+returns capped, pooled across stocks:
+
+| model | AR(1) | pairs | t |
+|---|---|---|---|
+| cross-sectional demean only | −0.0099 | 265,743 | −5.12 |
+| IPCA | −0.0135 | 265,743 | −6.95 |
+| autoencoder | −0.0091 | 265,743 | −4.67 |
+
+The condition is not met. IPCA and the autoencoder sit either side of plain
+demeaning; no model creates reversion the others lack, and the differences are
+third-decimal. All three are significant (|t| ≈ 5–7 on a quarter-million pairs)
+and economically trivial — roughly 1% of a month's residual reverses next month.
+Significance is cheap at this n and says nothing about tradeability.
+
+Consistent with the project's daily figures (−0.0285 raw, −0.0018 residual), so
+nothing here contradicts the mechanism work in Steps 1–7.
+
+Note: a first attempt at this statistic ran on contaminated returns and returned
++0.0000 for all three arms with a standard deviation of 56,171 — that run
+surfaced the reverse-split prints and is not a result.
+
 ## Status against the project
 
-Ninth pre-registered exploration test; eighth negative. Nothing here reopens
-Steps 1–7 — the pre-registered secondary statistic (residual AR(1)) was computed
-on contaminated returns and is **not reported**; it needs re-running on the
-corrected panel before any claim is made either way.
+Ninth pre-registered exploration test. Primary statistic measured, null run,
+secondary statistic reported: the pre-registration is closed. Formally
+AMBIGUOUS, substantively not tradeable — hedged Sharpe +0.28 against gross
+profitability's +0.58 at a quarter the turnover, with rank IC +0.006 and
+non-monotonic deciles.
+
+The transferable findings are the two design failures, not the verdict:
+a point-in-time universe is **data, not methodology**, and a null must break
+**the specific claim** — permuting characteristics tested "do characteristics
+predict returns" when the claim needing a null was "beyond market exposure."
+
+Three bugs were found in this step (universe leak, hedged-Sharpe intercept,
+AR(1) on contaminated returns). Two were caught by the same tell: a statistic
+that came back implausibly round or identical across series. **An implausibly
+clean number should be investigated before it is reported, not after.**
