@@ -1,4 +1,4 @@
-# Finding 9 — characteristic factor models (IPCA / autoencoder): **DEAD**
+# Finding 9 — characteristic factor models (IPCA / autoencoder): **AMBIGUOUS** by the pre-registered rule, **dead** in substance
 
 Pre-registered in [PREREG_autoencoder.md](PREREG_autoencoder.md). This document
 records the result *and* a look-ahead bug that invalidated a first round of
@@ -13,9 +13,25 @@ results, because the bug is the more useful finding.
 | market-hedged Sharpe | — | **+0.00** |
 | rank IC | — | **+0.0061**, t = 0.60, hit rate 48.2% |
 | deciles monotonic | — | **no** |
+| permutation null (10 refits) | DEAD if inside | real +0.35 vs mean −0.47, **max +0.23** — above every draw |
 
-Fails the primary threshold. Fails it more decisively on every diagnostic that
-does not depend on the weighting scheme.
+Fails the primary threshold (+0.31 against +0.50) but clears the null and sits
+above the +0.15 DEAD line, so the **pre-registered label is AMBIGUOUS**. It is
+recorded as such rather than relabelled to match the conclusion.
+
+Substantively it is dead, and the null is why that needs saying out loud.
+Permuting characteristics destroys the firm→return link, so a permuted model
+cannot tilt toward anything systematic — the draws are random dollar-neutral
+books bleeding borrow cost, hence the −0.47 mean. The real model did find a
+stable non-random tilt. **That tilt is beta +0.33**, and it paid because
+2017-2024 was a bull market.
+
+So the null confirms the model learned something real; it cannot tell alpha from
+beta. This project's own principle applies — *a null must break the specific
+claim*. Mine broke "characteristics predict returns" when the claim requiring a
+null was "characteristics predict returns **beyond market exposure**." A
+beta-neutralised permutation null is the correct design, and the market-hedged
+Sharpe of **+0.00** is what it would have reported.
 
 ## What the strategy actually was
 
