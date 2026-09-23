@@ -10,7 +10,7 @@ results, because the bug is the more useful finding.
 |---|---|---|
 | net Sharpe 2017-2024 | WORKS ≥ +0.50 | **+0.31** (5 seeds, sd 0.05) |
 | same, returns capped at ±(95%,300%) | — | **−0.06** |
-| market-hedged Sharpe | — | **+0.00** |
+| market-hedged Sharpe | — | **+0.28** (corrected — see below) |
 | rank IC | — | **+0.0061**, t = 0.60, hit rate 48.2% |
 | deciles monotonic | — | **no** |
 | permutation null (10 refits) | DEAD if inside | real +0.35 vs mean −0.47, **max +0.23** — above every draw |
@@ -106,11 +106,43 @@ Capping removes unadjusted reverse-split prints (CHK +100x, WLL +20x, SUNE
 +2.9 billion %). That the capped arm is negative means what remains of +0.31
 leans on prints that do not correspond to tradeable price moves.
 
-### It is not a zero-beta trade, and the beta is the return
+### It is not a zero-beta trade
 
 Dollar-neutral by construction (Σw = 2.6e−09) but **beta +0.33** to the
-equal-weight universe — long leg 0.84, short leg −0.51. Market-hedged Sharpe
-**+0.00** against raw +0.36. The residual was market premium in a rising market.
+equal-weight universe — long leg 0.84, short leg −0.51.
+
+**Correction.** This section first reported a market-hedged Sharpe of **+0.00**
+and concluded the entire return was market premium. That was a bug. The hedge
+was computed as `res = y − (a + b·x)` and the Sharpe taken of `res` — but OLS
+residuals have zero mean by construction, so that statistic is 0.00 for any
+input. Three different series printed ±0.00, the same tell that had caught an
+AR(1) bug an hour earlier, and it was missed.
+
+Removing only the market component (`net − β·mkt`, keeping the intercept) gives
+**hedged Sharpe +0.28** at the pre-registered K=5. The beta is real; the claim
+that beta was the *whole* return was not.
+
+### Tweaking: capacity helps a little, the objective does not
+
+| K | 1 | 3 | 5 | 8 | 15 |
+|---|---|---|---|---|---|
+| hedged Sharpe | +0.18 | −0.05 | **+0.28** | +0.34 | +0.36 |
+
+| objective | hedged |
+|---|---|
+| reconstruction MSE (as built) | **+0.28** |
+| cross-sectional IC | +0.04 |
+| portfolio Sharpe (the DLSA move) | +0.13 |
+
+The reconstruction loss finds factors explaining the *variance* of returns while
+prediction needs factors carrying non-zero *mean* premia, so the objective looks
+misaligned — and the prediction that IC or Sharpe objectives would beat it was
+**wrong**. Both did worse. Reconstruction fits 60 × ~1,400 residuals; the Sharpe
+objective optimises one scalar over 60 months. At this sample size the training
+signal outweighs the alignment argument.
+
+K=15 roughly doubles hedged Sharpe over K=5. K was pre-registered at 5 so that
+this choice could not be made after seeing results; **the headline stays at K=5**.
 
 ### The ordering carries nothing
 
@@ -119,10 +151,34 @@ hit rate 48.2%. Deciles are flat from D1 to D9 (+7% to +11%/yr) with everything
 in D10 (+24.97%) — and D1, the short leg, returns +11.8%/yr, which is why
 shorting it bled 5.2%/yr. Not monotonic.
 
-This rules out the charitable reading. The construction *was* bad — cardinal
-weights let a `max|rhat|` of 2.7e5 size positions — but fixing it would not help,
-because there is no ordering underneath to rebuild around. D10 is high-beta
-speculative names in a bull market, which is the same fact as the +0.33 beta.
+The construction *was* bad — cardinal weights let a `max|rhat|` of 2.7e5 size
+positions — and the flat D1-D9 says most of the cross-section is noise, with
+the spread coming from D10 alone.
+
+### Against traditional factors
+
+Same panel, window, costs and construction; classic characteristics used directly
+as the score (signed via OSAP's `Sign` field, an in-sample choice worth +0.20 in
+Step 3 — so the traditional arm is flattered):
+
+| | net Sh | beta | hedged | turn |
+|---|---|---|---|---|
+| GP (gross profitability) alone | +0.58 | −0.01 | **+0.58** | 0.24 |
+| autoencoder, K=15 | +0.46 | +0.29 | +0.36 | — |
+| equal-weight composite of 9 classics | +0.47 | +0.33 | +0.22 | 0.49 |
+| autoencoder, K=5 (pre-registered) | +0.35 | +0.33 | +0.28 | 0.87 |
+| equal-weight all 209 (signed) | +0.34 | +0.18 | +0.13 | 0.63 |
+| equal-weight universe, long only | +0.52 | — | — | 0 |
+
+The autoencoder beats both naive composites on a hedged basis and loses to the
+single best characteristic, at ~3.5x its turnover. GP's +0.58 is the best of nine
+tried against an SE of ~0.38, so it will not survive a multiple-testing
+correction either and is not tradeable on this evidence.
+
+Value (−0.15), investment (−0.48) and momentum (−0.04) were all negative in
+2017-2024. This window was hostile to factors generally, which is the
+Avramov-Cheng-Metzker result reproduced: the sophisticated model did not beat the
+simple ones by enough to pay for itself.
 
 ## Panel defects still outstanding
 
