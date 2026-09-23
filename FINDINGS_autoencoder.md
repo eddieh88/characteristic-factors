@@ -180,6 +180,35 @@ Value (−0.15), investment (−0.48) and momentum (−0.04) were all negative i
 Avramov-Cheng-Metzker result reproduced: the sophisticated model did not beat the
 simple ones by enough to pay for itself.
 
+## Correction to the pre-registration's benchmark
+
+PREREG_autoencoder.md says *"This is also the authors' own best arm. Their
+IPCA-5 scores 4.16 against PCA-5's 3.36."* Those are **DLSA's** numbers —
+Sharpes from feeding IPCA residuals into their CNN+Transformer — not
+Gu-Kelly-Xiu's. Two papers' benchmarks were conflated when writing the
+pre-registration. The pre-registration itself is left unedited; the error is
+recorded here.
+
+It matters because it made IPCA's +0.33 look like a catastrophic replication
+failure against 4.16, when the two numbers measure different things on
+different data.
+
+**What GKX actually claim** is a *risk model* result — out-of-sample total R²
+and pricing errors — not a trading result. A published replication of their
+method (Korean market, 38 characteristics, 2006-2020 OOS) reports total R² of
+**14.6%** for the conditional autoencoder against Fama-French's **4.6%**, and a
+long-short portfolio Sharpe of **0.297**.
+
+Our corrected +0.31 (hedged +0.28) sits within noise of that 0.297. So this step
+did not fail to replicate GKX — it **never tested GKX's claim**, and the
+tradeable quantity it did measure agrees with the literature.
+
+This also settles the objective question. Total R² 14.6% with a long-short
+Sharpe of 0.30 is a model that explains return *variance* well and return
+*means* barely at all — exactly the split the reconstruction objective predicts.
+Reconstruction is the correct objective for a risk model. No objective tweak
+converts a risk model into an alpha model when the inputs carry rank IC 0.006.
+
 ## Panel defects still outstanding
 
 - Unadjusted reverse splits (vendor adjusts forward splits; missed some reverse).
