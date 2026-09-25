@@ -79,6 +79,10 @@ python3 autoencoder_test.py       # Step 9
 python3 universe_leak_check.py    # the regression test; run it first if you touch the screen
 ```
 
+Scripts read `cache/` relative to the repo root; if you already hold the
+archive elsewhere, `ln -s /path/to/your/cache cache` (gitignored, never
+committed) rather than re-downloading it.
+
 Expects a MarketParquet key at `~/.market_parquest/api_key.txt`, **never in the
 repo** — the pre-commit hook in `hooks/` scans for it. Enable with
 `git config core.hooksPath hooks`. No market data is redistributed here;
