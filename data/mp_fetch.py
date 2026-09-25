@@ -4,8 +4,8 @@ Uses the manifest endpoint (up to 400 files per call, presigned R2 URLs) rather
 than one request per day.  Files are cached under cache/mp/ and skipped if
 already present, so this is resumable -- kill it and re-run.
 
-  python3 src/mp_fetch.py              # everything from 2000-01-03
-  python3 src/mp_fetch.py 2017-01-01   # from a date
+  python3 data/mp_fetch.py              # everything from 2000-01-03
+  python3 data/mp_fetch.py 2017-01-01   # from a date
 """
 import os, sys, json, time
 import requests

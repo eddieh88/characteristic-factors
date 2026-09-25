@@ -6,7 +6,7 @@ against the MarketParquet panel (~10,000 delisted symbols) by the same method --
 recompute MaxRet per symbol-month, match to OSAP on correlation -- so that dead
 firms are matchable.
 
-Gates are in exploration/PREREG_characteristics.md and are checked at the end.
+Gates are in PREREG_characteristics.md and are checked at the end.
 """
 import numpy as np, pandas as pd, polars as pl
 

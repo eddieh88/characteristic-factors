@@ -10,7 +10,7 @@ The symptom is visible without any model.  Just hold the universe equal-weighted
 and compare screen timings.  If lag 0 beats lag 1 by a wide margin, the screen
 leaks.  Run this after any change to the panel build.
 
-    $ python3 exploration/universe_leak_check.py
+    $ python3 universe_leak_check.py
 """
 import pandas as pd, numpy as np, sys
 
