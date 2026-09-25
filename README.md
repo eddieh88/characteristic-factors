@@ -18,15 +18,16 @@ tested exactly that.
 
 ## The short version
 
-- **The published signals, combined: no better than luck.** 209 of them together
-  net a Sharpe of **+0.24**, and two of ten random shuffles scored higher.
+- **The published signals, combined: no better than luck.** 209 of them, each
+  pointed the way its paper says it works, net a Sharpe of **+0.04**. Two of ten
+  random shuffles scored higher.
 - **The neural network: falls short, and what it found was market exposure.**
   It netted **+0.31** against a pre-set bar of +0.50. It does beat random
   shuffles, but the thing it learned is to lean long the market, which paid
   because 2017–2024 was a bull market.
-- **One old-fashioned factor beats it.** Buying profitable companies (gross
-  profitability) alone scores **+0.58** with market exposure removed, trading a
-  quarter as much.
+- **Textbook factors beat it.** A plain average of nine classic factors scores
+  **+0.43** with market exposure removed; buying profitable companies alone
+  scores **+0.58**, trading a quarter as much.
 - **Our first result was +1.95, and most of it was a bug.** The bug is more
   instructive than the result, so it gets its own section below.
 
@@ -51,12 +52,16 @@ monthly. No fitting, nothing to overfit.
 
 | | Sharpe after costs |
 |---|---|
-| all 209 signals combined | **+0.24** |
-| best of 10 random shuffles | +0.33 |
+| all 209 signals, in their published directions | **+0.04** |
+| best of 10 random shuffles | +0.25 |
 
 To build the shuffles, we scrambled which company each set of characteristics
 belongs to and ran the same strategy. The real signals should beat that easily.
 They don't — **two of ten shuffles did better.**
+
+Oddly, ignoring the published directions entirely scored higher (+0.24),
+though still inside its own shuffles. If these signals still worked, pointing
+them the way their papers say should be the version that pays. It isn't.
 
 ### 3. The neural network
 
@@ -80,12 +85,14 @@ because it learned something consistent: **lean long the market** (beta
 records capped — split adjustments the data vendor missed, one of them a
 +2.9 billion percent "return" — the result goes negative.
 
-Meanwhile, one textbook factor did better on its own:
+Meanwhile, plain textbook factors did better:
 
-| | Sharpe, market exposure removed | trading |
-|---|---|---|
-| gross profitability alone | **+0.58** | ¼ as much |
-| the neural network | +0.28 | — |
+| | Sharpe, market exposure removed |
+|---|---|
+| gross profitability alone | **+0.58** |
+| investment (asset growth) alone | +0.51 |
+| simple average of 9 classic factors | **+0.43** |
+| the neural network | +0.28 |
 
 ## The bug that mattered more than the result
 
@@ -107,6 +114,17 @@ sample. What caught it was looking at the actual holdings and seeing tiny
 companies inside a list that was supposed to be the most liquid 1,500.
 
 [`universe_leak_check.py`](universe_leak_check.py) now guards against it.
+
+## A correction found after publication
+
+The downloaded characteristics file turned out to be **already pointed in each
+signal's published direction**, despite being named "raw". Code that pointed
+them again undid it. That swapped the two arms of the 209-signal test and ran
+some textbook factors backwards — investment first showed −0.48, and is really
++0.43. It was caught by a separate analysis cross-checking the file against
+independently computed values. The verdicts above did not change; the
+comparisons with textbook factors got worse for the neural network. Details in
+[FINDINGS_autoencoder.md](FINDINGS_autoencoder.md#correction-the-osap-file-was-already-signed).
 
 ## Where to go next
 

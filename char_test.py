@@ -49,7 +49,10 @@ def composite(ch, cols, sig, permnos, months, use_sign):
         X = g[cols].astype(float)
         z = (X - X.mean()) / X.std(ddof=0)
         z = z.clip(-3, 3)
-        if use_sign:
+        # osap_all_raw.parquet is ALREADY value * OSAP sign, despite its name.
+        # So the data as stored IS sign-aligned; multiplying by the sign again
+        # recovers the raw orientation. Before this fix the two arms were swapped.
+        if not use_sign:
             for c in cols:
                 s = sig.get(c)
                 if s: z[c] = z[c]*s

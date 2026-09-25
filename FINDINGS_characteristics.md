@@ -29,28 +29,31 @@ Rebuilt against the survivorship-free panel. All five gates passed:
 winsorised, **equal-weight composite with no fitting**, top 1,500 by dollar
 volume, monthly rebalance, 2017-01 → 2024-12 (96 months).
 
+**Corrected 2026-09-25.** The first version of this table had the two arms
+swapped — see [the correction](#correction-the-two-arms-were-swapped) below.
+The verdict does not change.
+
 | arm | gross | net @2bp | breakeven | null mean | **null max** | verdict |
 |---|---|---|---|---|---|---|
-| sign-aligned | +0.25 | **+0.24** | 44bp | −0.22 | **+0.33** | inside null |
-| not sign-aligned | +0.05 | **+0.04** | 8bp | −0.24 | **+0.25** | inside null |
+| **published directions** (sign-aligned) | +0.05 | **+0.04** | 8bp | −0.24 | **+0.25** | inside null |
+| direction ignored (raw) | +0.25 | **+0.24** | 44bp | −0.22 | **+0.33** | inside null |
 
-SE(Sharpe) ≈ 0.35 on 96 months, so +0.24 is t ≈ 0.7 on its own terms — and it is
-beaten by two of ten null draws that permute characteristics across stocks within
-each month, destroying only the link between a firm and its own subsequent
-return.
+SE(Sharpe) ≈ 0.35 on 96 months, so even +0.24 is t ≈ 0.7 on its own terms.
+Each arm is beaten by two of ten null draws that permute characteristics across
+stocks within each month, destroying only the link between a firm and its own
+subsequent return.
 
-**Costs are not the obstacle.** Monthly rebalancing holds turnover at 0.69, so
-breakeven is 44bp against 2bp assumed. There is no signal to pay them with.
+## The published directions did not help
 
-## The sign field is doing the work
+Pointing each signal the way its paper says it works scored **+0.04**. Ignoring
+direction altogether scored +0.24. Both are inside their nulls, so neither
+number means much on its own — but the comparison is the opposite of what
+the anomaly literature would predict. If these signals still worked, their
+published orientation should be the one that pays.
 
-Sign alignment is worth **+0.20 of Sharpe** (0.24 vs 0.04). OSAP orients each
-signal so historical mean returns increase in it — an orientation chosen on data
-including our window's predecessors. Strip it and the composite is
-indistinguishable from noise.
-
-That is the pre-registered hazard, realised: what remains of these anomalies out
-of sample is mostly the memory of which direction they used to work.
+The raw composite has no economic interpretation: it averages 209 signals whose
+orientations were set arbitrarily by how each was first defined. Its +0.24 is
+noise that happened to land above the signed version's.
 
 ## Interpretation
 
@@ -85,3 +88,20 @@ net in 2009–2016 on reversal, and the crosswalk validates at r = 0.9998 on a
 held-out signal. The measurements work. What they measure is gone.
 
 Anything next should be something not in a public catalogue.
+
+## Correction: the two arms were swapped
+
+Found 2026-09-25 by a parallel analysis, then verified here by rerunning.
+
+`cache/osap_all_raw.parquet` stores each signal already multiplied by its OSAP
+sign, despite the name. Volatility signals whose sign is −1 are 99–100% negative
+in the file, which raw volatility can never be. `char_test.py` then multiplied by
+the sign again when asked to sign-align, which undid it — so the arm labelled
+"sign-aligned" was raw, and the arm labelled "not sign-aligned" was signed.
+
+Rerunning with the labels fixed reproduces both rows digit for digit, in swapped
+places. The first version of this document concluded that sign alignment was
+worth +0.20 of Sharpe and that *"what remains of these anomalies out of sample is
+mostly the memory of which direction they used to work."* **Both statements were
+wrong.** The published directions were worth −0.20, not +0.20, and the verdict
+— dead, inside the null — holds either way.

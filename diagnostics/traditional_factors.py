@@ -3,11 +3,14 @@
 Same corrected point-in-time panel, same window (2017-2024), same costs
 (2bp one-way, 35bp/yr borrow), same dollar-neutral construction.  Each classic
 characteristic is used directly as the score.  Signs from OSAP's Sign field --
-NOTE this is the one in-sample choice here, worth +0.20 of Sharpe in Step 3, so
+NOTE the cached panel is ALREADY signed (osap_all_raw.parquet is value*sign), so
+the sign must not be applied again -- doing so ran every sign -1 factor backwards
+until 2026-09-25. Direction is an in-sample choice, so
 the traditional arm is if anything flattered relative to the autoencoder.
 
 Reports raw Sharpe and market-hedged Sharpe, because the autoencoder's +0.31
-was entirely beta (+0.33) and hedged to +0.00.
+carries beta +0.33; hedged, it is +0.28. (An earlier note here said +0.00 --
+that was the Sharpe of OLS residuals, which is zero by construction.)
 """
 import numpy as np, pickle, json, warnings
 warnings.filterwarnings("ignore")
@@ -50,17 +53,17 @@ print("-"*62)
 res={}
 for lab,nm in CLASSIC:
     j=names.index(nm); sg=signs[nm]
-    s,b,h,tu=run_score(lambda t,j=j,sg=sg: Z[t][:,j]*sg)
+    s,b,h,tu=run_score(lambda t,j=j: Z[t][:,j])          # Z is already signed
     res[lab]=(s,h); print(f"{lab:32s}{s:+8.2f}{b:+7.2f}{h:+8.2f}{tu:7.2f}", flush=True)
 
 idx=[names.index(n) for _,n in CLASSIC]; sg=np.array([signs[n] for _,n in CLASSIC])
-s,b,h,tu=run_score(lambda t: (Z[t][:,idx]*sg).mean(1))
+s,b,h,tu=run_score(lambda t: Z[t][:,idx].mean(1))      # Z is already signed
 print("-"*62)
 print(f"{'equal-weight composite of the 9':32s}{s:+8.2f}{b:+7.2f}{h:+8.2f}{tu:7.2f}")
 allsg=np.array([signs[n] for n in names])
-s,b,h,tu=run_score(lambda t: (Z[t]*allsg).mean(1))
+s,b,h,tu=run_score(lambda t: Z[t].mean(1))             # Z is already signed
 print(f"{'equal-weight all 209 (signed)':32s}{s:+8.2f}{b:+7.2f}{h:+8.2f}{tu:7.2f}")
 print("-"*62)
-print(f"{'AUTOENCODER (for comparison)':32s}{+0.31:+8.2f}{+0.33:+7.2f}{+0.00:+8.2f}{0.88:7.2f}")
+print(f"{'AUTOENCODER (for comparison)':32s}{+0.31:+8.2f}{+0.33:+7.2f}{+0.28:+8.2f}{0.88:7.2f}")
 mk=np.array([R[t].mean() for t in range(M) if IDX[t][0]>=201701])
 print(f"\nequal-weight universe (long only): {mk.mean()*12:+.2%}/yr, Sharpe {sharpe(mk):+.2f}")

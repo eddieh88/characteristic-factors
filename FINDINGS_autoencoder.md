@@ -158,27 +158,32 @@ the spread coming from D10 alone.
 ### Against traditional factors
 
 Same panel, window, costs and construction; classic characteristics used directly
-as the score (signed via OSAP's `Sign` field, an in-sample choice worth +0.20 in
-Step 3 — so the traditional arm is flattered):
+as the score, each pointed in its published direction (OSAP's `Sign` field).
+
+**Corrected 2026-09-25** — see [the double-signing error](#correction-the-osap-file-was-already-signed)
+below. The first version of this table applied the sign twice, which ran every
+factor whose sign is −1 backwards.
 
 | | net Sh | beta | hedged | turn |
 |---|---|---|---|---|
 | GP (gross profitability) alone | +0.58 | −0.01 | **+0.58** | 0.24 |
+| AssetGrowth (investment) alone | +0.43 | −0.06 | **+0.51** | 0.30 |
+| equal-weight composite of 9 classics | +0.52 | +0.06 | **+0.43** | 0.53 |
 | autoencoder, K=15 | +0.46 | +0.29 | +0.36 | — |
-| equal-weight composite of 9 classics | +0.47 | +0.33 | +0.22 | 0.49 |
 | autoencoder, K=5 (pre-registered) | +0.35 | +0.33 | +0.28 | 0.87 |
-| equal-weight all 209 (signed) | +0.34 | +0.18 | +0.13 | 0.63 |
+| equal-weight all 209, published directions | −0.01 | −0.17 | +0.13 | 0.66 |
 | equal-weight universe, long only | +0.52 | — | — | 0 |
 
-The autoencoder beats both naive composites on a hedged basis and loses to the
-single best characteristic, at ~3.5x its turnover. GP's +0.58 is the best of nine
-tried against an SE of ~0.38, so it will not survive a multiple-testing
-correction either and is not tradeable on this evidence.
+With market exposure removed, **a plain equal-weight average of nine textbook
+factors (+0.43) beats the pre-registered autoencoder (+0.28)**, and two single
+factors beat it outright. The autoencoder beats only the 209-signal composite.
+GP's +0.58 is the best of nine tried against an SE of ~0.38, so it will not
+survive a multiple-testing correction either and is not tradeable on this
+evidence.
 
-Value (−0.15), investment (−0.48) and momentum (−0.04) were all negative in
-2017-2024. This window was hostile to factors generally, which is the
-Avramov-Cheng-Metzker result reproduced: the sophisticated model did not beat the
-simple ones by enough to pay for itself.
+Value (−0.15) and momentum (−0.04) were negative in 2017-2024; profitability
+(+0.58) and investment (+0.43) were not. The sophisticated model did not beat
+the simple ones — it lost to them, at roughly twice their turnover.
 
 ## Correction to the pre-registration's benchmark
 
@@ -260,3 +265,29 @@ Three bugs were found in this step (universe leak, hedged-Sharpe intercept,
 AR(1) on contaminated returns). Two were caught by the same tell: a statistic
 that came back implausibly round or identical across series. **An implausibly
 clean number should be investigated before it is reported, not after.**
+
+## Correction: the OSAP file was already signed
+
+Found 2026-09-25 by a parallel analysis reconciling OSAP against independently
+computed signals, then verified here.
+
+`cache/osap_all_raw.parquet` stores every signal as **value × OSAP sign**, despite
+its name and despite `build_char_panel.py` describing it as raw. Volatility
+signals whose sign is −1 (RealizedVol, IdioVol3F, VolSD) are 99–100% negative in
+the file, which a raw volatility can never be. Microsoft's asset growth appears
+as −0.243.
+
+Every script that then multiplied by the sign applied it **twice**, which undoes
+it. Consequences:
+
+| where | effect | status |
+|---|---|---|
+| IPCA / autoencoder | none — a learned loading absorbs a flipped input | unaffected |
+| Step 3 composite | the two arms were **swapped** | corrected in `FINDINGS_characteristics.md` |
+| traditional factors | every sign −1 factor ran **backwards**; investment showed −0.48, is +0.43 | corrected above |
+
+The pre-registration's claim that Step 3 found the sign field "worth +0.20 of
+Sharpe" (PREREG_autoencoder.md, *Sign alignment*) rests on the swapped arms and
+is wrong: pointing each signal in its published direction scored **+0.04**, and
+ignoring direction scored +0.24 — both inside the null. The pre-registration is
+left unedited; the error is recorded here.

@@ -2,9 +2,11 @@
 
 Joined through crosswalk_sf.csv (7,638 symbols, 44.8% delisted).  Characteristics
 are lagged one month, cross-sectionally z-scored and winsorised at +-3, missing
-set to 0.  Raw/unsigned -- a factor model estimates loadings and does not need
-OSAP's Sign field, which Step 3 found was worth +0.20 of Sharpe and chosen
-in-sample.
+set to 0.  NOTE: osap_all_raw.parquet is ALREADY value * OSAP sign, despite its name.
+A factor model estimates loadings and does not care either way. (An earlier
+version of this note called the data raw, and cited a +0.20 sign effect from
+Step 3 that came from swapped arms -- see FINDINGS_autoencoder.md.) OSAP
+chose those signs in-sample.
 """
 import numpy as np, pandas as pd, warnings
 warnings.filterwarnings("ignore")
