@@ -20,7 +20,8 @@ WORKERS    = 8            # paid tier allows 600 req/min
 def hdrs():
     if not os.path.exists(KEY):
         sys.exit(f"no key at {KEY}")
-    return {"Authorization": f"Bearer {open(KEY).read().strip()}"}
+    with open(KEY) as fh:
+        return {"Authorization": f"Bearer {fh.read().strip()}"}
 
 def manifest(h, start, end):
     r = requests.get(f"{BASE}/manifest/stock_daily",
@@ -28,18 +29,29 @@ def manifest(h, start, end):
     r.raise_for_status()
     return r.json().get("files", [])
 
+def write_atomic(dst, data):
+    """Write to a temporary file and rename, so an interrupted run never leaves a
+    truncated file that the `> 1000 bytes` check would later treat as complete."""
+    tmp = dst + ".part"
+    with open(tmp, "wb") as fh:
+        fh.write(data)
+    os.replace(tmp, dst)
+
 def grab(item):
     dst = os.path.join(OUT, item["filename"])
     if os.path.exists(dst) and os.path.getsize(dst) > 1000:
         return 0
+    reason = "response under 1000 bytes"
     for attempt in range(3):
         try:
-            b = requests.get(item["download_url"], timeout=180).content
-            if len(b) > 1000:
-                open(dst, "wb").write(b); return len(b)
-        except Exception:
-            time.sleep(1 + attempt)
-    print("  FAILED", item["filename"], flush=True)
+            r = requests.get(item["download_url"], timeout=180)
+            r.raise_for_status()
+            if len(r.content) > 1000:
+                write_atomic(dst, r.content); return len(r.content)
+        except (requests.RequestException, OSError) as e:
+            reason = f"{type(e).__name__}: {e}"
+        time.sleep(1 + attempt)
+    print("  FAILED", item["filename"], "-", reason, flush=True)
     return 0
 
 def main(start="2000-01-03", end=None):

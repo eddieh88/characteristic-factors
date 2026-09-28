@@ -23,7 +23,8 @@ CACHE = "cache/mp_free"
 
 def hdrs():
     if os.path.exists(KEY):
-        return {"Authorization": f"Bearer {open(KEY).read().strip()}"}
+        with open(KEY) as fh:
+            return {"Authorization": f"Bearer {fh.read().strip()}"}
     print(f"! no key at {KEY} -- only the last ~2 days are open without one")
     return {}
 
@@ -35,7 +36,9 @@ def day(d, h):
     r = requests.get(URL.format(d), headers=h, timeout=90)
     if r.status_code != 200:
         return None
-    open(p, "wb").write(r.content)
+    with open(p + ".part", "wb") as fh:   # temp file + rename: never a truncated cache file
+        fh.write(r.content)
+    os.replace(p + ".part", p)
     return pd.read_parquet(io.BytesIO(r.content))
 
 def main():

@@ -149,7 +149,9 @@ comparisons with textbook factors got worse for the neural network. Details in
 ## Running it
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt                        # dependencies + pytest
+git config core.hooksPath hooks                        # secret scan + tests on every commit
+python3 -m pytest -q                                   # unit tests; the data check skips without cache/
 python3 data/mp_fetch.py && python3 data/mp_panel.py   # clean price panel
 python3 osap_fetch.py && python3 build_char_panel.py   # characteristics, joined
 python3 universe_leak_check.py                         # run this before trusting anything

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "characteristic-factors"
+version = "0.1.0"
+description = "Tests of characteristic-based return prediction on MarketParquet data"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "pyarrow>=12.0",           # parquet
+    "requests>=2.28",          # data/mp_fetch.py, data/mp_validate.py
+    "torch>=2.0",              # autoencoder_test.py, diagnostics/market_beta.py
+    "polars>=0.20",            # osap_fetch.py, crosswalk_sf.py
+    "openassetpricing>=1.0",   # osap_fetch.py
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+# The repository is a set of scripts run from its root; there is no importable
+# package, so nothing is installed beyond the dependencies above.
+[tool.setuptools]
+py-modules = []
+packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

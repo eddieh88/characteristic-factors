@@ -14,6 +14,18 @@ import numpy as np, pandas as pd
 
 SRC, OUT = "cache/mp", "cache"
 
+def session_days(px):
+    """Boolean mask of real trading sessions.
+
+    The vendor emits a file for US market holidays containing ~1 symbol.
+    115 such days in 2000-2026, mostly Mondays (MLK/Presidents/Memorial/Labor)
+    and Thursdays (Thanksgiving, July 4).  Drop any day with fewer than 20% of
+    the trailing-median name count -- real sessions never come close.
+    """
+    cnt = px.notna().sum(1)
+    thr = cnt.rolling(250, min_periods=20).median() * 0.20
+    return cnt >= thr.fillna(cnt.median() * 0.20)
+
 def main(limit=None):
     files = sorted(glob.glob(f"{SRC}/stock_daily_*.parquet"))
     if limit: files = files[:int(limit)]
@@ -34,13 +46,7 @@ def main(limit=None):
             print(f"  {i:5d}/{len(files)}  {d}  {len(s):5d} symbols", flush=True)
     px = pd.DataFrame(close).T.sort_index(); px.index = pd.to_datetime(px.index)
     vv = pd.DataFrame(dv).T.sort_index();    vv.index = pd.to_datetime(vv.index)
-    # The vendor emits a file for US market holidays containing ~1 symbol.
-    # 115 such days in 2000-2026, mostly Mondays (MLK/Presidents/Memorial/Labor)
-    # and Thursdays (Thanksgiving, July 4).  Drop any day with fewer than 20% of
-    # the trailing-median name count -- real sessions never come close.
-    cnt = px.notna().sum(1)
-    thr = cnt.rolling(250, min_periods=20).median() * 0.20
-    keep = cnt >= thr.fillna(cnt.median() * 0.20)
+    keep = session_days(px)
     if (~keep).sum():
         print(f"  dropping {(~keep).sum()} non-session days "
               f"(holiday files with ~1 symbol), e.g. "
